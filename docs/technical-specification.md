@@ -38,10 +38,22 @@ interface JWTPayload {
 
 ### Revision Status Flow
 ```
-draft → submitted → approved
-  ↓         ↓          ↓
-deleted   deleted   (final)
+[*] → draft → submitted → approved → [*]
+        ↓         ↓         
+     deleted      ↓         
+        ↓         ↓         
+       [*]    rejected → [*]
+               ↑
+               ↓ (差戻し)
+             draft
 ```
+
+#### Status Transitions
+- **draft**: 提出 → submitted, 削除 → deleted
+- **submitted**: 承認 → approved, 却下 → rejected, 差戻し → draft, 強制削除 → deleted  
+- **approved**: 最終状態
+- **rejected**: 最終状態
+- **deleted**: 最終状態
 
 ### Main Entities
 ```typescript
@@ -50,7 +62,7 @@ interface Revision {
   revision_id: string;
   title: string;
   content: string;
-  status: 'draft' | 'submitted' | 'approved' | 'deleted';
+  status: 'draft' | 'submitted' | 'approved' | 'rejected' | 'deleted';
   proposer_id: string;
   target_article_id: string;
   created_at: string;
@@ -228,7 +240,7 @@ interface RevisionTableProps {
 
 // StatusBadge
 interface StatusBadgeProps {
-  status: 'draft' | 'submitted' | 'approved' | 'deleted';
+  status: 'draft' | 'submitted' | 'approved' | 'rejected' | 'deleted';
 }
 ```
 
