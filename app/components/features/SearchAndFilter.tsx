@@ -157,7 +157,7 @@ export function SearchAndFilter() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="記事や修正案を検索..."
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-gray-900 placeholder:text-gray-500"
                 aria-label="検索キーワード"
               />
               <Button
@@ -179,7 +179,7 @@ export function SearchAndFilter() {
                 id="category-filter"
                 value={filters.category}
                 onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-gray-900 bg-white"
                 aria-label="カテゴリーでフィルター"
               >
                 <option value="">すべてのカテゴリー</option>
@@ -198,7 +198,7 @@ export function SearchAndFilter() {
                 id="status-filter"
                 value={filters.status}
                 onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-gray-900 bg-white"
                 aria-label="ステータスでフィルター"
               >
                 <option value="">すべてのステータス</option>
@@ -218,7 +218,7 @@ export function SearchAndFilter() {
                 id="type-filter"
                 value={filters.type}
                 onChange={(e) => setFilters(prev => ({ ...prev, type: e.target.value as 'all' | 'articles' | 'revisions' }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-gray-900 bg-white"
                 aria-label="タイプでフィルター"
               >
                 <option value="all">すべて</option>
