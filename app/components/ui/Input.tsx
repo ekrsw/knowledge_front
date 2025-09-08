@@ -1,4 +1,4 @@
-import { InputHTMLAttributes } from 'react'
+import { InputHTMLAttributes, useId } from 'react'
 import { cn } from '../../lib/utils'
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -15,7 +15,8 @@ export function Input({
   className,
   ...props
 }: InputProps) {
-  const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`
+  const generatedId = useId()
+  const inputId = id || generatedId
   const errorId = error ? `${inputId}-error` : undefined
   const helperId = helperText ? `${inputId}-helper` : undefined
 
