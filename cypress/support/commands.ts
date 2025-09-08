@@ -4,6 +4,9 @@
 
 // Custom commands for the knowledge workflow system
 
+// Make this file a module
+export {}
+
 declare global {
   namespace Cypress {
     interface Chainable {
@@ -23,7 +26,7 @@ declare global {
        * Custom command to wait for API call to complete
        * @example cy.waitForApi('GET', '/api/v1/revisions')
        */
-      waitForApi(method: string, url: string): Chainable<Interception>
+      waitForApi(method: string, url: string): Chainable<any>
       
       /**
        * Custom command to mock API responses
@@ -91,7 +94,7 @@ Cypress.Commands.add('waitForApi', (method: string, url: string) => {
 Cypress.Commands.add('mockApi', (method: string, url: string, response: any) => {
   const alias = `${method}${url.replace(/\//g, '_').replace(/[^a-zA-Z0-9_]/g, '')}`
   
-  cy.intercept(method, url, response).as(alias)
+  cy.intercept(method as any, url, response).as(alias)
   
   return cy.wrap(null)
 })

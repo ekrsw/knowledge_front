@@ -1,103 +1,131 @@
-import Image from "next/image";
+'use client'
+
+import { useState } from 'react'
+import { Button } from './components/ui/Button'
+import { Input } from './components/ui/Input'
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [isLoading, setIsLoading] = useState(false)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [emailError, setEmailError] = useState('')
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+  const handleSubmit = () => {
+    setIsLoading(true)
+    
+    // Simple email validation for demo
+    if (!email.includes('@')) {
+      setEmailError('Please enter a valid email address')
+      setIsLoading(false)
+      return
+    }
+    
+    setEmailError('')
+    
+    // Simulate async operation
+    setTimeout(() => {
+      setIsLoading(false)
+      alert(`Form submitted with email: ${email}`)
+    }, 2000)
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md mx-auto">
+        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-gray-900 text-center">
+              TDD Component Demo
+            </h1>
+            <p className="mt-2 text-sm text-gray-600 text-center">
+              Testing our Button and Input components built with TDD
+            </p>
+          </div>
+
+          <div className="space-y-6">
+            <Input
+              label="Email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              error={emailError}
+              helperText="Enter your email address"
+              required
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+
+            <Input
+              label="Password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              helperText="Enter your password"
+              required
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <Button
+                variant="primary"
+                onClick={handleSubmit}
+                loading={isLoading}
+                disabled={!email || !password}
+              >
+                {isLoading ? 'Signing in...' : 'Sign in'}
+              </Button>
+
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setEmail('')
+                  setPassword('')
+                  setEmailError('')
+                }}
+              >
+                Clear
+              </Button>
+            </div>
+
+            <div className="space-y-4 pt-6">
+              <h3 className="text-lg font-medium text-gray-900">Button Variants</h3>
+              
+              <div className="grid grid-cols-2 gap-2">
+                <Button variant="primary" size="sm">Primary</Button>
+                <Button variant="secondary" size="sm">Secondary</Button>
+                <Button variant="outline" size="sm">Outline</Button>
+                <Button variant="ghost" size="sm">Ghost</Button>
+              </div>
+
+              <div className="space-y-2">
+                <Button variant="primary" size="md" className="w-full">Medium Button</Button>
+                <Button variant="primary" size="lg" className="w-full">Large Button</Button>
+              </div>
+            </div>
+
+            <div className="pt-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Input States</h3>
+              
+              <div className="space-y-4">
+                <Input
+                  label="Normal Input"
+                  placeholder="Enter some text"
+                  helperText="This is helper text"
+                />
+                
+                <Input
+                  label="Error State"
+                  error="This field is required"
+                  placeholder="This has an error"
+                />
+                
+                <Input
+                  label="Required Field"
+                  required
+                  placeholder="This field is required"
+                />
+              </div>
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
     </div>
-  );
+  )
 }

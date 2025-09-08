@@ -21,6 +21,7 @@ describe('Cypress Setup Validation', () => {
     // This is just testing that the command doesn't throw errors
     // The actual element may not exist yet
     cy.get('body').then(() => {
+      // @ts-ignore - Custom command exists but not in types
       expect(cy.getByTestId).to.be.a('function')
     })
   })
@@ -31,6 +32,7 @@ describe('Cypress Setup Validation', () => {
     
     // Validate that the mockApi command exists and is callable
     cy.window().then(() => {
+      // @ts-ignore - Custom command exists but not in types
       expect(cy.mockApi).to.be.a('function')
     })
   })
@@ -70,16 +72,19 @@ describe('Cypress Setup Validation', () => {
 // Skip authentication tests for now since we haven't implemented login yet
 describe.skip('Authentication E2E (Skipped - Not Implemented Yet)', () => {
   it('should login as admin user', () => {
+    // @ts-ignore - Custom command exists but not in types
     cy.loginAs('admin')
     cy.url().should('eq', Cypress.config().baseUrl + '/')
   })
 
   it('should login as approver user', () => {
+    // @ts-ignore - Custom command exists but not in types
     cy.loginAs('approver')
     cy.url().should('eq', Cypress.config().baseUrl + '/')
   })
 
   it('should login as regular user', () => {
+    // @ts-ignore - Custom command exists but not in types
     cy.loginAs('user')
     cy.url().should('eq', Cypress.config().baseUrl + '/')
   })
