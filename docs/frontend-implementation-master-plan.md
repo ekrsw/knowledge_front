@@ -6,6 +6,7 @@
 **Current State**: Phase 3 TDD implementation 85% complete (core features operational)  
 **Target**: Full-featured, scalable, accessible frontend application with enterprise capabilities  
 **Timeline**: 5-phase systematic implementation with parallel execution opportunities  
+**Backend Connection**: Real-time integration with localhost:8000 backend server (no mocks)  
 
 ---
 
@@ -15,8 +16,13 @@
 - Next.js 15 + TypeScript + Tailwind CSS v4 architecture
 - Core TDD components: SearchAndFilter, ArticleHistory, ApprovedRevisionsList (39/39 tests)
 - Authentication system with Zustand state management
-- MSW testing infrastructure
+- Testing infrastructure (ready for real backend integration)
 - Basic UI component library (Button, forms)
+
+### 🔄 Development Approach
+- **Real Backend Integration**: Connect to localhost:8000 backend server
+- **No Mock Usage**: All development uses real API endpoints and data
+- **Test Users**: Use credentials from docs/test-users.md for authentication testing
 
 ### 🔄 In Progress (Phase 3 Quality)
 - E2E test enhancement
@@ -36,10 +42,98 @@
 
 ## Phase-Based Implementation Workflow
 
-## 🏗️ Phase 1: Architecture Foundation (2-3 weeks)
-**Lead Coordination**: Frontend Architect + System Architect + Context7 MCP
+## 🔗 Phase 1: Backend API Connection & Foundation (2-3 weeks)
+**Lead Coordination**: Backend Architect + Frontend Architect + Context7 MCP
+**Backend Server**: localhost:8000 (real connection, no mocks)
+**Test Users**: Available in `docs/test-users.md` for development and testing
 
-### 1.1 Technical Architecture Design (TDD Approach)
+### 1.1 Backend API Integration & Connection (TDD Approach)
+**Agent**: Backend Architect + Context7 MCP  
+**Duration**: 4-5 sessions
+**Priority**: CRITICAL - Must be completed before other development work
+
+#### TDD Implementation Cycle
+
+##### Step 1: Red Phase - API Connection Tests First
+- [ ] **API Connectivity Tests**: Write tests for real backend communication
+  ```typescript
+  // tests/api/connection.test.ts
+  describe('Backend API Connection', () => {
+    it('should establish connection to localhost:8000 backend services', async () => {
+      const apiClient = new APIClient('http://localhost:8000')
+      const healthCheck = await apiClient.checkHealth()
+      
+      expect(healthCheck.status).toBe('healthy')
+      expect(healthCheck.database).toBe('connected')
+      expect(healthCheck.responseTime).toBeLessThan(200)
+    })
+  })
+  ```
+
+- [ ] **Authentication Integration Tests**: Write tests for real auth flow with test users
+  ```typescript
+  // tests/api/auth-integration.test.ts
+  describe('Authentication Integration', () => {
+    it('should authenticate with localhost:8000 backend using test users', async () => {
+      const authService = new AuthService('http://localhost:8000')
+      // Using test users from docs/test-users.md
+      const credentials = { username: 'testadmin', password: 'password' }
+      
+      const authResult = await authService.login(credentials)
+      expect(authResult.accessToken).toBeDefined()
+      expect(authResult.refreshToken).toBeDefined()
+      expect(authResult.user.role).toBe('admin')
+    })
+  })
+  ```
+
+- [ ] **Core API Endpoints Tests**: Write tests for real CRUD operations with localhost:8000
+  ```typescript
+  // tests/api/endpoints.test.ts
+  describe('Core API Endpoints', () => {
+    it('should handle articles CRUD operations with localhost:8000 backend', async () => {
+      const articlesAPI = new ArticlesAPI('http://localhost:8000')
+      
+      // Create with authenticated test user
+      const newArticle = await articlesAPI.create({ title: 'Test Article' })
+      expect(newArticle.id).toBeDefined()
+      
+      // Read
+      const fetchedArticle = await articlesAPI.getById(newArticle.id)
+      expect(fetchedArticle.title).toBe('Test Article')
+      
+      // Update  
+      const updatedArticle = await articlesAPI.update(newArticle.id, { title: 'Updated Title' })
+      expect(updatedArticle.title).toBe('Updated Title')
+      
+      // Delete
+      await articlesAPI.delete(newArticle.id)
+      await expect(articlesAPI.getById(newArticle.id)).rejects.toThrow('Not found')
+    })
+  })
+  ```
+
+##### Step 2: Green Phase - Implement API Integration to Pass Tests
+- [ ] Build complete API client for localhost:8000 with error handling and retry logic
+- [ ] Implement JWT authentication flow with token refresh using test users
+- [ ] Create all required API service methods for core features (no mocks)
+- [ ] Set up API configuration pointing to localhost:8000 backend
+- [ ] Implement real-time WebSocket connections for live updates with real backend
+
+##### Step 3: Refactor Phase - Optimize API Integration
+- [ ] Optimize API request caching and batching
+- [ ] Enhance error handling with user-friendly messages
+- [ ] Improve authentication state management
+- [ ] Add comprehensive API monitoring and logging
+
+#### Success Criteria
+- All API integration tests passing (100%) with localhost:8000
+- Backend connection to localhost:8000 fully functional
+- Authentication flow operational with test users from docs/test-users.md
+- Core CRUD operations working with real backend (no mocks)
+- Real-time features connected to localhost:8000 WebSocket
+
+### 1.2 Technical Architecture Design (TDD Approach)
 **Agent**: System Architect + Sequential MCP  
 **Duration**: 3-4 sessions
 
@@ -467,178 +561,177 @@
 
 ---
 
-## 🔗 Phase 3: Backend Integration (3-4 weeks)
-**Lead Coordination**: Backend Architect + Frontend Architect + Security Engineer
+## 🏗️ Phase 3: Advanced Architecture & Integration (3-4 weeks)
+**Lead Coordination**: Frontend Architect + Performance Engineer + Security Engineer
 
-### 3.1 API Integration Layer
-**Agent**: Backend Architect + Context7 MCP  
-**Duration**: 4-5 sessions
-
-#### TDD Implementation Cycle
-
-##### Step 1: Red Phase - API Integration Tests First
-- [ ] **REST API Tests**: Write tests for API integration
-  ```typescript
-  // tests/api/integration.test.ts
-  describe('API Integration Layer', () => {
-    it('should handle all REST endpoints with proper error handling', async () => {
-      const apiClient = new APIClient()
-      
-      // Test successful API call
-      const articles = await apiClient.getArticles()
-      expect(articles).toHaveProperty('data')
-      expect(articles.data).toBeInstanceOf(Array)
-      
-      // Test error handling
-      server.use(
-        http.get('/api/v1/articles', () => HttpResponse.error())
-      )
-      
-      await expect(apiClient.getArticles()).rejects.toThrow('API request failed')
-    })
-  })
-  ```
-
-- [ ] **WebSocket Tests**: Write tests for real-time connections
-  ```typescript
-  // tests/api/websocket.test.ts
-  describe('WebSocket Integration', () => {
-    it('should maintain real-time connection with reconnection logic', async () => {
-      const wsClient = new WebSocketClient('ws://localhost:3001')
-      const mockHandler = jest.fn()
-      
-      wsClient.on('article_update', mockHandler)
-      await wsClient.connect()
-      
-      // Simulate server message
-      wsClient.simulateMessage({ type: 'article_update', data: { id: '1' } })
-      expect(mockHandler).toHaveBeenCalledWith({ id: '1' })
-    })
-  })
-  ```
-
-##### Step 2: Green Phase - Implement API Integration to Pass Tests
-- [ ] Build complete REST API integration with error handling
-- [ ] Implement WebSocket connections for real-time features
-- [ ] Create file upload/download handling system
-- [ ] Add API retry logic and rate limiting
-
-##### Step 3: Refactor Phase - Optimize API Performance
-- [ ] Optimize API request caching and batching
-- [ ] Enhance error handling and retry strategies
-- [ ] Improve WebSocket reconnection logic
-- [ ] Add comprehensive API monitoring
-
-### 3.2 Authentication & Authorization
-**Agent**: Security Engineer + Backend Architect  
-**Duration**: 3-4 sessions
-
-#### TDD Implementation Cycle
-
-##### Step 1: Red Phase - Auth Tests First
-- [ ] **JWT Management Tests**: Write tests for token handling
-  ```typescript
-  // tests/auth/jwt.test.ts
-  describe('JWT Token Management', () => {
-    it('should handle token refresh and validation securely', async () => {
-      const authService = new AuthService()
-      const mockToken = 'valid.jwt.token'
-      
-      // Test token validation
-      expect(authService.validateToken(mockToken)).toBe(true)
-      
-      // Test token refresh
-      const refreshedToken = await authService.refreshToken(mockToken)
-      expect(refreshedToken).toBeDefined()
-      expect(authService.validateToken(refreshedToken)).toBe(true)
-    })
-  })
-  ```
-
-- [ ] **RBAC Tests**: Write tests for role-based access control
-  ```typescript
-  // tests/auth/rbac.test.ts
-  describe('Role-Based Access Control', () => {
-    it('should enforce proper access control for different user roles', () => {
-      const user = createMockUser({ role: 'editor' })
-      const adminUser = createMockUser({ role: 'admin' })
-      
-      expect(hasPermission(user, 'edit_article')).toBe(true)
-      expect(hasPermission(user, 'delete_user')).toBe(false)
-      expect(hasPermission(adminUser, 'delete_user')).toBe(true)
-    })
-  })
-  ```
-
-##### Step 2: Green Phase - Implement Auth to Pass Tests
-- [ ] Enhance JWT token management with secure refresh
-- [ ] Implement comprehensive RBAC system
-- [ ] Add multi-factor authentication support
-- [ ] Build session management optimization
-
-##### Step 3: Refactor Phase - Strengthen Security
-- [ ] Add advanced security headers implementation
-- [ ] Ensure OWASP compliance validation
-- [ ] Enhance token security with encryption
-- [ ] Implement comprehensive security auditing
-
-### 3.3 Data Synchronization
+### 3.1 State Management & Data Synchronization
 **Agent**: Frontend Architect + Performance Engineer  
-**Duration**: 2-3 sessions
+**Duration**: 3-4 sessions
+**Note**: API Integration completed in Phase 1
 
 #### TDD Implementation Cycle
 
-##### Step 1: Red Phase - Sync Tests First
-- [ ] **Real-time Sync Tests**: Write tests for data synchronization
+##### Step 1: Red Phase - Advanced State Management Tests First
+- [ ] **Complex State Management Tests**: Write tests for advanced state patterns
   ```typescript
-  // tests/sync/realtime.test.ts
-  describe('Data Synchronization', () => {
-    it('should sync data changes in real-time across clients', async () => {
-      const syncManager = new DataSyncManager()
+  // tests/state/advanced.test.ts
+  describe('Advanced State Management', () => {
+    it('should handle complex state dependencies and computed values', async () => {
+      const store = useApplicationStore()
+      
+      // Test computed state dependencies
+      store.setUser({ role: 'editor', permissions: ['read', 'write'] })
+      store.setCurrentArticle({ id: '1', status: 'draft' })
+      
+      expect(store.canEditCurrentArticle).toBe(true)
+      expect(store.availableActions).toContain('publish')
+    })
+  })
+  ```
+
+- [ ] **Real-time Sync Tests**: Write tests for data synchronization across components
+  ```typescript
+  // tests/state/sync.test.ts
+  describe('Real-time State Synchronization', () => {
+    it('should sync state changes across all components in real-time', async () => {
+      const articlesStore = useArticlesStore()
+      const notificationsStore = useNotificationsStore()
+      
+      // Simulate real-time update from backend
+      articlesStore.handleRealTimeUpdate({ 
+        type: 'article_updated', 
+        data: { id: '1', title: 'Updated Title' } 
+      })
+      
+      expect(articlesStore.articles.find(a => a.id === '1')?.title).toBe('Updated Title')
+      expect(notificationsStore.notifications).toContainEqual(
+        expect.objectContaining({ type: 'info', message: 'Article updated' })
+      )
+    })
+  })
+  ```
+
+##### Step 2: Green Phase - Implement Advanced State Management to Pass Tests
+- [ ] Build complex state management with computed values and dependencies
+- [ ] Implement real-time state synchronization across components
+- [ ] Create optimistic UI updates with rollback capabilities
+- [ ] Add state persistence and hydration logic
+
+##### Step 3: Refactor Phase - Optimize State Performance
+- [ ] Optimize state update performance and memory usage
+- [ ] Enhance state synchronization efficiency
+- [ ] Improve state persistence and recovery
+- [ ] Add comprehensive state monitoring and debugging
+
+### 3.2 Security & Performance Enhancement
+**Agent**: Security Engineer + Performance Engineer  
+**Duration**: 3-4 sessions
+**Note**: Authentication completed in Phase 1
+
+#### TDD Implementation Cycle
+
+##### Step 1: Red Phase - Security & Performance Tests First
+- [ ] **Security Headers Tests**: Write tests for comprehensive security
+  ```typescript
+  // tests/security/headers.test.ts
+  describe('Security Headers & CSP', () => {
+    it('should have proper security headers and Content Security Policy', async () => {
+      const response = await fetch('/dashboard')
+      const headers = response.headers
+      
+      expect(headers.get('Content-Security-Policy')).toBeDefined()
+      expect(headers.get('X-Frame-Options')).toBe('DENY')
+      expect(headers.get('X-Content-Type-Options')).toBe('nosniff')
+      expect(headers.get('Strict-Transport-Security')).toBeDefined()
+    })
+  })
+  ```
+
+- [ ] **Performance Tests**: Write tests for Core Web Vitals optimization
+  ```typescript
+  // tests/performance/metrics.test.ts
+  describe('Performance Optimization', () => {
+    it('should meet Core Web Vitals thresholds after optimization', async () => {
+      await page.goto('/dashboard')
+      const metrics = await page.evaluate(() => getPerformanceMetrics())
+      
+      expect(metrics.LCP).toBeLessThan(2500) // 2.5s
+      expect(metrics.FID).toBeLessThan(100)  // 100ms  
+      expect(metrics.CLS).toBeLessThan(0.1)  // 0.1
+      expect(metrics.TTI).toBeLessThan(3800) // 3.8s
+    })
+  })
+  ```
+
+##### Step 2: Green Phase - Implement Security & Performance to Pass Tests
+- [ ] Configure comprehensive security headers and CSP policies
+- [ ] Implement Core Web Vitals optimizations (LCP, FID, CLS, TTI)
+- [ ] Add input validation and XSS/CSRF protection
+- [ ] Build performance monitoring and alerting systems
+
+##### Step 3: Refactor Phase - Advanced Security & Performance
+- [ ] Enhance security monitoring with threat detection
+- [ ] Optimize bundle splitting and lazy loading strategies
+- [ ] Improve caching mechanisms for better performance
+- [ ] Add security penetration testing automation
+
+### 3.3 Advanced Features Integration
+**Agent**: Frontend Architect + Magic MCP  
+**Duration**: 2-3 sessions
+**Note**: Focus on advanced UI features and integrations
+
+#### TDD Implementation Cycle
+
+##### Step 1: Red Phase - Advanced Features Tests First
+- [ ] **Rich Text Editor Tests**: Write tests for collaborative editing features
+  ```typescript
+  // tests/features/editor.test.ts
+  describe('Rich Text Editor', () => {
+    it('should handle collaborative editing with real-time sync', async () => {
+      const editor = new CollaborativeEditor('doc-1')
       const mockWebSocket = new MockWebSocket()
       
-      syncManager.connect(mockWebSocket)
-      
-      // Simulate data change
-      await syncManager.updateData('articles', '1', { title: 'Updated' })
+      editor.connect(mockWebSocket)
+      editor.insertText('Hello World', 0)
       
       expect(mockWebSocket.sent).toContain({
-        type: 'data_sync',
-        collection: 'articles',
-        id: '1',
-        changes: { title: 'Updated' }
+        type: 'text_change',
+        documentId: 'doc-1',
+        operation: { type: 'insert', text: 'Hello World', position: 0 }
       })
     })
   })
   ```
 
-- [ ] **Conflict Resolution Tests**: Write tests for data conflicts
+- [ ] **File Upload Tests**: Write tests for drag-and-drop file handling
   ```typescript
-  // tests/sync/conflicts.test.ts
-  describe('Conflict Resolution', () => {
-    it('should resolve data conflicts using last-write-wins strategy', async () => {
-      const resolver = new ConflictResolver()
+  // tests/features/upload.test.ts
+  describe('Advanced File Upload', () => {
+    it('should handle file uploads with progress tracking and preview', async () => {
+      const uploader = new FileUploader()
+      const file = new File(['content'], 'test.txt', { type: 'text/plain' })
       
-      const localChange = { id: '1', title: 'Local Title', timestamp: 1000 }
-      const remoteChange = { id: '1', title: 'Remote Title', timestamp: 2000 }
+      const uploadPromise = uploader.upload(file)
+      expect(uploader.getProgress()).toBe(0)
       
-      const resolved = resolver.resolve(localChange, remoteChange)
-      expect(resolved.title).toBe('Remote Title') // Later timestamp wins
+      await uploadPromise
+      expect(uploader.getProgress()).toBe(100)
+      expect(uploader.getPreviewUrl()).toBeDefined()
     })
   })
   ```
 
-##### Step 2: Green Phase - Implement Sync to Pass Tests
-- [ ] Build real-time data sync with WebSocket/SSE
-- [ ] Implement optimistic UI updates with rollback
-- [ ] Create conflict resolution strategies
-- [ ] Add background sync for offline scenarios
+##### Step 2: Green Phase - Implement Advanced Features to Pass Tests
+- [ ] Build collaborative rich text editor with Magic MCP
+- [ ] Implement advanced file upload with drag-and-drop and preview
+- [ ] Create notification system with real-time alerts
+- [ ] Add data visualization components with charts and analytics
 
-##### Step 3: Refactor Phase - Optimize Sync Performance
-- [ ] Optimize sync performance and bandwidth usage
-- [ ] Enhance conflict resolution algorithms
-- [ ] Improve offline sync reliability
-- [ ] Add comprehensive data consistency validation
+##### Step 3: Refactor Phase - Optimize Advanced Features
+- [ ] Optimize editor performance for large documents
+- [ ] Enhance file upload with chunking and retry logic
+- [ ] Improve notification system with intelligent grouping
+- [ ] Add accessibility features to all advanced components
 
 ---
 
@@ -969,9 +1062,9 @@
 
 | Phase | Primary Agent | Supporting Agents | MCP Servers | Key Tools |
 |-------|---------------|-------------------|-------------|-----------|
-| 1. Architecture | System Architect | Frontend Architect | Context7, Sequential | Architecture docs, diagrams |
+| 1. API & Foundation | Backend Architect | Frontend Architect | Context7, Sequential | API integration, connection |
 | 2. Development | Frontend Architect | Magic MCP | Magic, Context7 | Component generation, UI patterns |
-| 3. Integration | Backend Architect | Security Engineer | Context7, Sequential | API integration, security |
+| 3. Advanced Integration | Frontend Architect | Performance Engineer | Magic, Sequential | State management, features |
 | 4. Quality | Quality Engineer | Performance Engineer | Playwright, Sequential | Testing, optimization |
 | 5. Deployment | DevOps Architect | System Architect | - | CI/CD, monitoring |
 
@@ -981,7 +1074,7 @@
 
 ### Phase 1 Parallel Tracks
 ```
-Architecture Design ←→ Design System ←→ State Planning
+API Connection ←→ Authentication Setup ←→ Architecture Planning
 ```
 
 ### Phase 2 Parallel Tracks
@@ -991,7 +1084,7 @@ Page Development ←→ Component Library ←→ Mobile Optimization
 
 ### Phase 3 Parallel Tracks
 ```
-API Integration ←→ Authentication ←→ Real-time Features
+State Management ←→ Security Enhancement ←→ Advanced Features
 ```
 
 ### Phase 4 Parallel Tracks
@@ -1004,9 +1097,9 @@ Testing Strategy ←→ Performance Opt ←→ Security Hardening
 ## Success Metrics & Quality Gates
 
 ### Phase 1 Gates
-- Architecture review approved
-- Design system component library >50 components
-- Performance targets defined and validated
+- Backend API connection established and tested
+- Authentication flow fully functional
+- Architecture foundation implemented and validated
 
 ### Phase 2 Gates
 - All core pages implemented and functional
@@ -1014,9 +1107,9 @@ Testing Strategy ←→ Performance Opt ←→ Security Hardening
 - Component library integration complete
 
 ### Phase 3 Gates
-- API integration 100% functional
-- Authentication & security implementation complete
-- Real-time features operational
+- Advanced state management operational
+- Security & performance optimizations complete
+- Advanced features integrated and tested
 
 ### Phase 4 Gates
 - Test coverage >95% (E2E), >90% (unit)
@@ -1098,9 +1191,9 @@ Testing Strategy ←→ Performance Opt ←→ Security Hardening
 ## Next Steps: Immediate Actions
 
 1. **Complete Current Phase 3**: Finish E2E, performance, and accessibility tasks
-2. **Stakeholder Alignment**: Review and approve implementation plan
+2. **Stakeholder Alignment**: Review and approve implementation plan  
 3. **Resource Allocation**: Confirm agent availability and MCP server capacity
-4. **Phase 1 Initiation**: Begin architecture foundation with System Architect
+4. **Phase 1 Initiation**: Begin backend API connection with Backend Architect
 
 **Estimated Total Timeline**: 14-17 weeks for complete implementation  
 **Resource Requirements**: Multi-agent coordination with MCP server utilization  
