@@ -324,6 +324,12 @@ class ApiClient {
       ...ApiModeSwitch.getStatus()
     };
   }
+
+  updateConfig(updates: Partial<{ baseUrl: string; timeout: number; retries: number }>) {
+    // Note: This method is primarily for testing purposes
+    // In production, config should be managed through apiConfig
+    apiConfig.updateConfig(updates);
+  }
 }
 
 // Export singleton instance

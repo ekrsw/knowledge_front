@@ -137,6 +137,6 @@ export const ApiModeSwitch = {
 /**
  * Development helper - expose to window in development
  */
-if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+if (typeof window !== 'undefined' && (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test')) {
   (window as any).ApiModeSwitch = ApiModeSwitch;
 }

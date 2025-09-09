@@ -16,6 +16,8 @@ describe('API Integration Tests', () => {
     mockFetch.mockClear()
     // Reset to auto mode for each test
     ApiModeSwitch.useAuto()
+    // Clear authentication state between tests
+    apiClient.logout()
   })
 
   describe('API Configuration System', () => {

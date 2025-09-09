@@ -6,6 +6,35 @@
 import '@testing-library/jest-dom'
 import 'jest-axe/extend-expect'
 
+// Add custom Jest matchers
+declare global {
+  namespace jest {
+    interface Matchers<R> {
+      toBeOneOf(expected: any[]): R;
+    }
+  }
+}
+
+// Extend Jest with custom matchers
+(expect as any).extend({
+  toBeOneOf(received: any, expected: any[]) {
+    const pass = expected.includes(received);
+    if (pass) {
+      return {
+        message: () =>
+          `expected ${received} not to be one of ${expected.join(', ')}`,
+        pass: true,
+      };
+    } else {
+      return {
+        message: () =>
+          `expected ${received} to be one of ${expected.join(', ')}`,
+        pass: false,
+      };
+    }
+  },
+});
+
 // DO NOT import MSW server for API integration tests
 // These tests should connect to real backend at localhost:8000
 
@@ -67,6 +96,15 @@ process.env.NODE_ENV = 'test'
 // Use cross-fetch for real backend connections in test environment
 // This prevents JSDOM CORS restrictions on localhost
 global.fetch = require('cross-fetch')
+
+// AbortSignal.timeout polyfill for JSDOM compatibility
+if (!AbortSignal.timeout) {
+  AbortSignal.timeout = function(milliseconds: number): AbortSignal {
+    const controller = new AbortController();
+    setTimeout(() => controller.abort(), milliseconds);
+    return controller.signal;
+  };
+}
 
 // Mock next/navigation for API tests
 jest.mock('next/navigation', () => ({

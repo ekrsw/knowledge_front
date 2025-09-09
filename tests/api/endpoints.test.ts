@@ -158,9 +158,9 @@ describe('Core API Endpoints', () => {
   describe('File Upload API', () => {
     it('should handle file uploads', async () => {
       // Create a test file-like object
-      const testFile = new Blob(['test file content'], { type: 'text/plain' });
+      const testFile = new File(['test file content'], 'test.txt', { type: 'text/plain' });
       const formData = new FormData();
-      formData.append('file', testFile, 'test.txt');
+      formData.append('file', testFile);
 
       // Note: API client needs to handle FormData for file uploads
       const response = await apiClient.request('/api/v1/upload', {
