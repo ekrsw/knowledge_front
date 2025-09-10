@@ -43,9 +43,39 @@ export const revisionsApi = {
     }
     
     const query = searchParams.toString()
-    const endpoint = `/api/v1/revisions${query ? `?${query}` : ''}`
+    const endpoint = `/api/v1/revisions/${query ? `?${query}` : ''}`
     
-    return apiClient.get<RevisionListResponse>(endpoint)
+    const response = await apiClient.get<any[]>(endpoint)
+    
+    // Transform raw array response to expected RevisionListResponse format
+    if (response.success && Array.isArray(response.data)) {
+      const revisions = response.data.map((item: any) => ({
+        revision_id: item.revision_id,
+        article_id: item.article_number || item.article_id,
+        title: item.after_title || item.title,
+        status: item.status,
+        created_at: item.created_at,
+        created_by: item.proposer_name || item.created_by,
+        version: 1, // Default version if not provided
+        category_name: item.category_name || 'Uncategorized',
+        author_name: item.proposer_name || item.author_name || 'Unknown'
+      }))
+      
+      const transformedResponse = {
+        ...response,
+        data: {
+          revisions,
+          total: revisions.length,
+          page: params?.page || 1,
+          limit: params?.limit || 20,
+          total_pages: Math.ceil(revisions.length / (params?.limit || 20))
+        }
+      }
+      
+      return transformedResponse
+    }
+    
+    return response
   },
 
   /**

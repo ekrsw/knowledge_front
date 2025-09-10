@@ -47,7 +47,17 @@ export function RevisionList({
   } = useQuery({
     queryKey: ['revisions', queryParams],
     queryFn: () => revisionsApi.getRevisions(queryParams),
-    select: (response) => response.data
+    select: (response) => {
+      // Ensure proper structure with fallback
+      const data = response.data as RevisionListResponse
+      return data || { 
+        revisions: [], 
+        total: 0, 
+        page: 1, 
+        limit: 20, 
+        total_pages: 0 
+      }
+    }
   })
 
   const handleSearch = (e: React.FormEvent) => {
@@ -102,7 +112,7 @@ export function RevisionList({
     )
   }
 
-  if (response.revisions.length === 0) {
+  if (!response?.revisions || response.revisions.length === 0) {
     return (
       <div data-testid="revision-list-empty" className="text-center p-12">
         <div className="text-gray-500">
@@ -203,7 +213,7 @@ export function RevisionList({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {response.revisions.map((revision) => (
+            {response?.revisions?.map((revision) => (
               <RevisionListRow 
                 key={revision.revision_id} 
                 revision={revision}
