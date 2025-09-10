@@ -2,6 +2,35 @@ import '@testing-library/jest-dom'
 import { server } from './mocks/server'
 import 'jest-axe/extend-expect'
 
+// Add custom Jest matchers
+declare global {
+  namespace jest {
+    interface Matchers<R> {
+      toBeOneOf(expected: any[]): R;
+    }
+  }
+}
+
+// Extend Jest with custom matchers
+(expect as any).extend({
+  toBeOneOf(received: any, expected: any[]) {
+    const pass = expected.includes(received);
+    if (pass) {
+      return {
+        message: () =>
+          `expected ${received} not to be one of ${expected.join(', ')}`,
+        pass: true,
+      };
+    } else {
+      return {
+        message: () =>
+          `expected ${received} to be one of ${expected.join(', ')}`,
+        pass: false,
+      };
+    }
+  },
+});
+
 // Mock IntersectionObserver
 global.IntersectionObserver = class IntersectionObserver {
   root = null
